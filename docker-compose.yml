@@ -2,47 +2,50 @@ version: "3.8"
 
 services:
   mysql:
-    user: "${UID}:${GID}" 
-    image: mysql:5.7
     container_name: mysql
+    image: mysql:latest
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: devops
-      MYSQL_USER: admin
-      MYSQL_PASSWORD: admin
+      MYSQL_ROOT_PASSWORD: "root"           # ✅ ADD THIS - MySQL requires this
+      MYSQL_DATABASE: "devops"
+      MYSQL_USER: "appuser"
+      MYSQL_PASSWORD: "apppassword"
+    ports:
+      - "3306:3306"
     volumes:
-      - ./mysql-data:/var/lib/mysql
-      - ./message.sql:/docker-entrypoint-initdb.d/message.sql  
+      - mysql-data:/var/lib/mysql
     networks:
-      - twotier
+      - two-tier
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot"]
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 60s
 
-  flask-app:
-    image: trainwithshubham/two-tier-flask-app:latest
-    container_name: flask-app
+  flask:
+    image: priyeshpadiya8201/two-tier-flask-app-flask:latest
+    container_name: two-tier-backend
     ports:
       - "5000:5000"
     environment:
       MYSQL_HOST: mysql
-      MYSQL_USER: root
-      MYSQL_PASSWORD: root
+      MYSQL_USER: appuser
+      MYSQL_PASSWORD: apppassword
       MYSQL_DB: devops
-    depends_on:
-      - mysql
     networks:
-      - twotier
-    restart: always
+      - two-tier
+    depends_on:
+      mysql:
+        condition: service_healthy    # ✅ Wait for MySQL to be healthy
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:5000/health || exit 1"]
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 30s
 
+volumes:
+  mysql-data:
+
 networks:
-  twotier:
+  two-tier:
