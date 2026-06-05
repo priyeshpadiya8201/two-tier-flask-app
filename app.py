@@ -49,4 +49,5 @@ if __name__ == '__main__':
 def submit():{develop}
 def init_db():{feature}
 def hello():{release}
+def fixbug():{hotfix}
 
