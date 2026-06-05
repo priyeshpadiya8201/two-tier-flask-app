@@ -46,6 +46,7 @@ if __name__ == '__main__':
     init_db()
     app.run(host='0.0.0.0', port=6000, debug=True)
 
-def submit():{}
-def init_db():{}
+def submit():{develop}
+def init_db():{feature}
+def hello():{release}
 
